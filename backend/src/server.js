@@ -2,14 +2,14 @@
  * Entry Point for the server
  */
 
+const config = require("./config/environment");
 const express = require("express");
-require("dotenv").config();
 
 const app = express();
 
 app.use(express.json());
 
-app.listen(process.env.PORT, () => {
+app.listen(config.PORT, () => {
   console.log("trimlink.org server is running.");
 });
 
