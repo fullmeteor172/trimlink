@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>trimlink</title>
+    <script>
+      //Sets the data-theme attribute based on local storage value
+      //data-theme attribute is used by DaisyUI to set the theme of it's components
+      const theme = localStorage.getItem("theme") || "garden"; //Default light
+      document.documentElement.setAttribute("data-theme", theme)
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
