@@ -5,7 +5,7 @@
  */
 
 const winston = require('winston');
-const {format, transports} = winston;
+const { format, transports } = winston;
 
 // Define log formats
 const logFormat = format.combine(
@@ -20,8 +20,9 @@ const consoleFormat = format.combine(
   format.colorize(),
   format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   format.printf(({ timestamp, level, message, ...rest }) => {
-    const restString = Object.keys(rest).length ? 
-      `\n${JSON.stringify(rest, null, 2)}` : '';
+    const restString = Object.keys(rest).length
+      ? `\n${JSON.stringify(rest, null, 2)}`
+      : '';
     return `[${timestamp}] ${level}: ${message}${restString}`;
   })
 );
@@ -34,25 +35,27 @@ const logger = winston.createLogger({
   transports: [
     // Console transport for all environments
     new transports.Console({
-      format: consoleFormat
+      format: consoleFormat,
     }),
     // File transport for non-development environments
-    ...(process.env.NODE_ENV !== 'development' ? [
-      // Write all logs with level 'error' and below to error.log
-      new transports.File({ 
-        filename: 'logs/error.log', 
-        level: 'error',
-        maxsize: 5242880, // 5MB
-        maxFiles: 5
-      }),
-      // Write all logs to combined.log
-      new transports.File({ 
-        filename: 'logs/combined.log',
-        maxsize: 5242880, // 5MB
-        maxFiles: 5
-      })
-    ] : [])
-  ]
+    ...(process.env.NODE_ENV !== 'development'
+      ? [
+          // Write all logs with level 'error' and below to error.log
+          new transports.File({
+            filename: 'logs/error.log',
+            level: 'error',
+            maxsize: 5242880, // 5MB
+            maxFiles: 5,
+          }),
+          // Write all logs to combined.log
+          new transports.File({
+            filename: 'logs/combined.log',
+            maxsize: 5242880, // 5MB
+            maxFiles: 5,
+          }),
+        ]
+      : []),
+  ],
 });
 
 module.exports = logger;

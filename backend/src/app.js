@@ -2,14 +2,15 @@
  * Express app setup and configuration
  */
 
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const compression = require("compression");
-const morgan = require("morgan"); //TODO: HTTP Logging, making custom logger
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan'); //TODO: HTTP Logging, making custom logger
 
-const config = require("./config/environment");
-const logger = require("./utils/logger");
+const config = require('./config/environment');
+const logger = require('./utils/logger');
+const routes = require('./routes/index');
 
 const app = express();
 
@@ -20,8 +21,8 @@ app.use(helmet());
 app.use(
   cors({
     origin: config.CORS_ORIGIN,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -34,9 +35,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 
 //Setting up request logging
-if (config.NODE_ENV != "test") {
+if (config.NODE_ENV != 'test') {
   app.use(
-    morgan("combined", {
+    morgan('combined', {
       stream: {
         write: (message) => logger.info(message.trim()),
       },
@@ -45,8 +46,11 @@ if (config.NODE_ENV != "test") {
 }
 
 // Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+//Registering all routes
+app.use('/', routes);
 
 module.exports = app;
