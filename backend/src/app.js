@@ -12,6 +12,7 @@ const config = require('./config/environment');
 const logger = require('./utils/logger');
 const routes = require('./routes/index');
 const rateLimiter = require('./middleware/rateLimiter.middleware');
+const { errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
 
@@ -57,5 +58,8 @@ app.get('/health', (req, res) => {
 
 //Registering all routes
 app.use('/', routes);
+
+//Global error handler
+app.use(errorHandler);
 
 module.exports = app;

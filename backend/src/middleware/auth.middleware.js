@@ -17,7 +17,7 @@ const verifyToken = (req, res, next) => {
   try {
     //Getting the token from request header
     const authHeader = req.headers.authorization;
-    
+
     //TODO: More robust auth header validation
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -25,7 +25,6 @@ const verifyToken = (req, res, next) => {
       req.user = null;
       next();
     }
-
     //Verify token, if this fails and error is thrown
     const decoded = jwt.verify(token, config.SUPABASE_JWT_SECRET);
 

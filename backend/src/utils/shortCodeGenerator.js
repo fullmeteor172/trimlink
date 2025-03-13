@@ -12,17 +12,18 @@ const crypto = require('crypto');
  */
 
 const generateShortCode = (length) => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrtsuvwxyz0123456789"
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrtsuvwxyz0123456789';
 
   //Creates a binary buffer of the required length [0-255] * some length (in base 10)
   const randomBytes = crypto.randomBytes(length);
   let result = '';
 
-  for(let i = 0; i<length; i++){
+  for (let i = 0; i < length; i++) {
     result += chars[randomBytes[i] % chars.length];
   }
 
   return result;
-}
+};
 
 module.exports = generateShortCode;

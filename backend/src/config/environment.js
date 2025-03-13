@@ -9,6 +9,7 @@ const requiredEnvVars = [
   'SUPABASE_URL',
   'SUPABASE_PUBLIC_API_KEY',
   'SUPABASE_JWT_SECRET',
+  'SUPABASE_ANON_USER_UUID',
 ];
 
 //Checking for missing environment variable
@@ -18,7 +19,6 @@ if (missingEnvVars.length > 0) {
   throw new Error(
     `Missing required environment variabels: ${missingEnvVars.join(', ')}`
   );
-  process.exit(1);
 }
 
 module.exports = {
@@ -29,8 +29,10 @@ module.exports = {
 
   // Supabase config
   SUPABASE_URL: process.env.SUPABASE_URL,
-  SUPABASE_KEY: process.env.SUPABASE_KEY,
+  SUPABASE_PUBLIC_API_KEY: process.env.SUPABASE_PUBLIC_API_KEY,
   SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
+  SUPABASE_SERVICE_ROLE_SECRET: process.env.SUPABASE_SERVICE_ROLE_SECRET,
+  SUPABASE_ANON_USER_UUID: process.env.SUPABASE_ANON_USER_UUID,
 
   // Link config
   BASE_URL:
@@ -45,9 +47,9 @@ module.exports = {
   RATE_LIMIT_WINDOW_MS: parseInt(
     process.env.RATE_LIMIT_WINDOW_MS || '60000',
     10
-  ), // 1 minute
+  ),
   RATE_LIMIT_MAX_REQUESTS: parseInt(
     process.env.RATE_LIMIT_MAX_REQUESTS || '15',
     10
-  ), // 30 requests per minute
+  ),
 };
