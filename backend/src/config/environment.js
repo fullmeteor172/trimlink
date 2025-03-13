@@ -47,7 +47,7 @@ module.exports = {
     10
   ), // 1 minute
   RATE_LIMIT_MAX_REQUESTS: parseInt(
-    process.env.RATE_LIMIT_MAX_REQUESTS || '30',
+    process.env.RATE_LIMIT_MAX_REQUESTS || '15',
     10
   ), // 30 requests per minute
 };

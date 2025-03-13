@@ -11,6 +11,7 @@ const morgan = require('morgan'); //TODO: HTTP Logging, making custom logger
 const config = require('./config/environment');
 const logger = require('./utils/logger');
 const routes = require('./routes/index');
+const rateLimiter = require('./middleware/rateLimiter.middleware');
 
 const app = express();
 
@@ -33,6 +34,10 @@ app.use(express.urlencoded({ extended: true }));
 
 //Increases performance by reducing response size aka less bandwidth used
 app.use(compression());
+
+//Setting a global ratelimiter for all routes
+//TODO: Set rate-limiter only for specific routes
+app.use(rateLimiter);
 
 //Setting up request logging
 if (config.NODE_ENV != 'test') {
