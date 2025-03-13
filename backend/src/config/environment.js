@@ -36,7 +36,7 @@ module.exports = {
 
   // Link config
   BASE_URL:
-    process.env.BASE_URL || 'http://localhost:' + (process.env.PORT || 3000),
+    process.env.BASE_URL || 'http://localhost',
   ANON_LINK_EXPIRY_DAYS: parseInt(
     process.env.ANON_LINK_EXPIRY_DAYS || '30',
     10

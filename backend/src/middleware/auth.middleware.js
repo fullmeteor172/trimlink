@@ -6,8 +6,8 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/environment');
 const logger = require('../utils/logger');
+const { errorResponse } = require('../utils/responseHandler');
 //TODO: Adding in a response handler
-
 /**
  * Middleware to verify JWT
  * Sets req.user if token is valid, else sets it to null
@@ -42,4 +42,18 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-module.exports = verifyToken;
+/**
+ * Middleware to require authentication
+ * Use after verifyToken middleware
+ */
+const requireAuth = (req, res, next) => {
+  if (!req.user) {
+    return errorResponse(res, 401, 'Authentication required');
+  }
+  next();
+};
+
+module.exports = {
+  verifyToken,
+  requireAuth,
+};

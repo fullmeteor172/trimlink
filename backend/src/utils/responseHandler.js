@@ -11,7 +11,7 @@
  * @param {*} data - Response data
  * @returns {Object} - Express response
  */
-const successReponse = (
+const successResponse = (
   res,
   statusCode = 200,
   message = 'Success',
@@ -44,6 +44,6 @@ const errorResponse = (
 };
 
 module.exports = {
-  successReponse,
+  successResponse,
   errorResponse,
 };

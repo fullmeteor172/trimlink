@@ -5,8 +5,11 @@
 
 const express = require('express');
 const router = express.Router();
+const linkRoutes = require('./link.routes'); // Fix the path if needed
+const redirectRoutes = require('./redirect.routes'); // Fix the path if needed
 
-//TODO: Make routes for '/api' endpoint aka API routes
-//TODO: Make routes for '/' endpoint aka redirecr routes
+// Use the routers as middleware
+router.use('/api', linkRoutes);
+router.use('/', redirectRoutes);
 
 module.exports = router;

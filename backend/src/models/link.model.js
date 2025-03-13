@@ -23,7 +23,6 @@ const supabase = createClient(
  * @param {number} [options.maxUses] - Maximum times the link can be used
  * @returns {Object} The created link object
  */
-
 const createLink = async (originalUrl, options = {}) => {
   try {
     const {
@@ -45,6 +44,15 @@ const createLink = async (originalUrl, options = {}) => {
       if (!isUnique) shortCode = generateShortCode(config.SHORT_CODE_LENGTH);
     }
 
+    // Add protocol if missing
+    let formattedUrl = originalUrl;
+    if (
+      !formattedUrl.startsWith('http://') &&
+      !formattedUrl.startsWith('https://')
+    ) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+
     const createdDate = new Date();
 
     //Setting expiry date if none is provided for anon users
@@ -63,7 +71,7 @@ const createLink = async (originalUrl, options = {}) => {
       .insert({
         user_id: userId,
         short_code: shortCode,
-        original_url: originalUrl,
+        original_url: formattedUrl,
         created_date: createdDate,
         expiry_date: finalExpiryDate,
         max_uses: maxUses,
@@ -144,7 +152,6 @@ const incrementLinkVisitCount = async (shortCode) => {
  * @param {string} short_code
  * @returns {boolean}
  */
-
 const deleteLink = async (shortCode) => {
   try {
     const { data, error } = await supabase
@@ -214,11 +221,61 @@ const expireLink = async (shortCode) => {
   }
 };
 
-expireLink('Li7DVH');
+/**
+ * Get all links for a specific user
+ * @param {string} userId - User ID
+ * @returns {Array} List of links
+ */
+const getAllLinksByUser = async (userId) => {
+  try {
+    const { data, error } = await supabase
+      .from('links')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) {
+      logger.error('Error in getAllLinksByUser', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    logger.error('Error in getAllLinksByUser model', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a specific link by ID
+ * @param {string} id - Link ID
+ * @returns {Object} The link object
+ */
+const getLinkById = async (id) => {
+  try {
+    const { data, error } = await supabase
+      .from('links')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      logger.error('Error in getLinkById', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    logger.error('Error in getLinkById model', error);
+    throw error;
+  }
+};
 
 module.exports = {
   createLink,
   getLinkObject,
   incrementLinkVisitCount,
   deleteLink,
+  expireLink,
+  getAllLinksByUser,
+  getLinkById,
 };
