@@ -1,5 +1,3 @@
-const validator = require('validator');
-
 const linkModel = require('../models/link.model');
 const { ApiError } = require('../middleware/error.middleware');
 const logger = require('../utils/logger');
@@ -20,7 +18,9 @@ const createLink = async (req, res) => {
     if (!originalUrl) throw new ApiError(400, 'Original URL is required.');
 
     // Validate URL format
-    if (!validator.isUrl(originalUrl)) {
+    try {
+      new URL(originalUrl);
+    } catch (error) {
       throw new ApiError(400, 'Invalid URL format.');
     }
 
@@ -75,7 +75,7 @@ const redirectLink = async (req, res) => {
     }
 
     logger.info(`Redirecting ${shortCode} to ${link.original_url}`);
-    res.redirect(link.original_url);
+    res.redirect(303, link.original_url);
   } catch (error) {
     if (error instanceof ApiError) {
       logger.warn('API Error in redirectLink controller:', error);
