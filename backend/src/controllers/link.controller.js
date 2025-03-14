@@ -1,3 +1,5 @@
+const validator = require('validator');
+
 const linkModel = require('../models/link.model');
 const { ApiError } = require('../middleware/error.middleware');
 const logger = require('../utils/logger');
@@ -18,9 +20,7 @@ const createLink = async (req, res) => {
     if (!originalUrl) throw new ApiError(400, 'Original URL is required.');
 
     // Validate URL format
-    try {
-      new URL(originalUrl);
-    } catch (error) {
+    if (!validator.isUrl(originalUrl)) {
       throw new ApiError(400, 'Invalid URL format.');
     }
 
@@ -40,7 +40,7 @@ const createLink = async (req, res) => {
     successResponse(res, 201, 'Shortened URL created successfully.', link);
   } catch (error) {
     logger.error('Error in createLink controller:', error);
-    errorResponse(res, error);
+    throw error;
   }
 };
 
@@ -54,17 +54,19 @@ const redirectLink = async (req, res) => {
     const { shortCode } = req.params;
 
     const link = await linkModel.getLinkByShortCode(shortCode);
-    if (!link) throw new ApiError(404, 'Short URL not found.');
+    if (!link)
+      return errorResponse(res, new ApiError(404, 'Short URL not found.'));
+
+    // If max_uses has been exhausted, remove the link
+    if (link.max_uses && link.visit_count >= link.max_uses) {
+      await linkModel.expireLink(shortCode);
+      return errorResponse(res, new ApiError(410, 'Short URL has expired.'));
+    }
 
     // Check expiration
     if (new Date(link.expiry_date) < new Date()) {
       await linkModel.expireLink(shortCode);
-      throw new ApiError(410, 'Short URL has expired.');
-    }
-
-    // If max_uses has been exhausted, remove the link
-    if (link.visit_count >= link.max_uses) {
-      await linkModel.expireLink(shortCode);
+      return errorResponse(res, new ApiError(410, 'Short URL has expired.'));
     }
 
     const incrementResult = await linkModel.incrementLinkVisitCount(shortCode);
@@ -75,8 +77,13 @@ const redirectLink = async (req, res) => {
     logger.info(`Redirecting ${shortCode} to ${link.original_url}`);
     res.redirect(link.original_url);
   } catch (error) {
-    logger.error('Error in redirectLink controller:', error);
-    errorResponse(res, error);
+    if (error instanceof ApiError) {
+      logger.warn('API Error in redirectLink controller:', error);
+      return errorResponse(res, error);
+    } else {
+      logger.error('Unexpected Error in redirectLink controller:', error);
+      return errorResponse(res, new ApiError(500, 'Internal Server Error'));
+    }
   }
 };
 

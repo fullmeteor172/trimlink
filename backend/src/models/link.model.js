@@ -109,9 +109,10 @@ const getLinkByShortCode = async (shortCode) => {
       .single();
 
     if (error) {
-      //No matching row is found
-      if (error.code == 'PGST116') {
-        logger.info('No shortLink associated with this URL', error);
+      // No matching row is found - return null instead of throwing
+      if (error.code === 'PGRST116') {
+        logger.info(`No shortLink found for code: ${shortCode}`);
+        return null;
       }
 
       logger.error('Failed to get original link.', error);
@@ -202,7 +203,7 @@ const updateOriginalLink = async (shortCode, newUrl) => {
  */
 const expireLink = async (shortCode) => {
   try {
-    const { date, error } = await supabase
+    const { data, error } = await supabase
       .from('links')
       .update({
         is_expired: true,
