@@ -58,6 +58,7 @@ jest/
 coverage/
 *.lcov
 .nyc_output/
+python_tests/
 
 # Miscellaneous
 !.gitignore

@@ -2,12 +2,15 @@ const linkModel = require('../models/link.model');
 const { ApiError } = require('../middleware/error.middleware');
 const logger = require('../utils/logger');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
+const { SUPABASE_ANON_USER_UUID } = require('../config/environment');
 
 /**
  * Shorten a URL
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
+
+//TODO: Better request param validation
 const createLink = async (req, res) => {
   try {
     const { originalUrl, maxUses, expiryDate } = req.body;
@@ -22,7 +25,7 @@ const createLink = async (req, res) => {
     }
 
     // Determine user ID (null for anonymous users)
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user ? req.user.id : SUPABASE_ANON_USER_UUID;
 
     // Prepare options
     const options = {
@@ -50,7 +53,7 @@ const redirectLink = async (req, res) => {
   try {
     const { shortCode } = req.params;
 
-    const link = await linkModel.getLinkObject(shortCode);
+    const link = await linkModel.getLinkByShortCode(shortCode);
     if (!link) throw new ApiError(404, 'Short URL not found.');
 
     // Check expiration
@@ -62,8 +65,11 @@ const redirectLink = async (req, res) => {
     // If max_uses has been exhausted, remove the link
     if (link.visit_count >= link.max_uses) {
       await linkModel.expireLink(shortCode);
-    } else {
-      await linkModel.incrementLinkVisitCount(shortCode);
+    }
+
+    const incrementResult = await linkModel.incrementLinkVisitCount(shortCode);
+    if (!incrementResult) {
+      throw new ApiError(500, 'Failed to increment visit count.');
     }
 
     logger.info(`Redirecting ${shortCode} to ${link.original_url}`);
@@ -75,16 +81,34 @@ const redirectLink = async (req, res) => {
 };
 
 /**
+ * Get link by short code
+ * @param {Object} req
+ * @param {Object} res
+ */
+const getLinkByShortCode = async (req, res) => {
+  try {
+    const { shortCode } = req.params; // Using 'id' from route params as the short code
+
+    const link = await linkModel.getLinkByShortCode(shortCode);
+    if (!link) throw new ApiError(404, 'Short URL not found.');
+
+    successResponse(res, 200, 'Link retrieved successfully.', link);
+  } catch (error) {
+    logger.error('Error in getLinkByShortCode controller:', error);
+    errorResponse(res, error);
+  }
+};
+
+/**
  * Delete a shortened URL (Only the creator can delete)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
 const deleteLink = async (req, res) => {
   try {
-    // Changed from shortCode to id to match the route parameter
-    const { id } = req.params;
+    const { shortCode } = req.params;
 
-    const link = await linkModel.getLinkById(id);
+    const link = await linkModel.getLinkByShortCode(shortCode);
     if (!link) throw new ApiError(404, 'Short URL not found.');
 
     if (!req.user || req.user.id !== link.user_id) {
@@ -106,8 +130,7 @@ const deleteLink = async (req, res) => {
  */
 const updateLink = async (req, res) => {
   try {
-    // Changed from shortCode to id to match the route parameter
-    const { id } = req.params;
+    const { shortCode } = req.params;
     const { newUrl } = req.body;
 
     if (!newUrl) throw new ApiError(400, 'New URL is required.');
@@ -119,7 +142,7 @@ const updateLink = async (req, res) => {
       throw new ApiError(400, 'Invalid URL format.');
     }
 
-    const link = await linkModel.getLinkById(id);
+    const link = await linkModel.getLinkByShortCode(shortCode);
     if (!link) throw new ApiError(404, 'Short URL not found.');
 
     if (!req.user || req.user.id !== link.user_id) {
@@ -143,7 +166,7 @@ const getStats = async (req, res) => {
   try {
     const { shortCode } = req.params;
 
-    const link = await linkModel.getLinkObject(shortCode);
+    const link = await linkModel.getLinkByShortCode(shortCode);
     if (!link) throw new ApiError(404, 'Short URL not found.');
 
     if (!req.user || req.user.id !== link.user_id) {
@@ -155,6 +178,8 @@ const getStats = async (req, res) => {
 
     successResponse(res, 200, 'Link statistics retrieved successfully.', {
       visits: link.visit_count,
+      maxUses: link.max_uses,
+      isExpired: link.is_expired,
     });
   } catch (error) {
     logger.error('Error in getStats controller:', error);
@@ -183,23 +208,6 @@ const getAllLinks = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const getLinkById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const link = await linkModel.getLinkById(id);
-
-    if (!link) throw new ApiError(404, 'Short URL not found.');
-
-    if (req.user.id !== link.user_id) {
-      throw new ApiError(403, 'Unauthorized: You cannot access this link.');
-    }
-
-    successResponse(res, 200, 'Link retrieved successfully.', link);
-  } catch (error) {
-    logger.error('Error in getLinkById controller:', error);
-    errorResponse(res, error);
-  }
-};
 
 // Make sure these are explicitly assigned to module.exports
 module.exports = {
@@ -209,8 +217,4 @@ module.exports = {
   updateLink,
   getStats,
   getAllLinks,
-  getLinkById,
 };
-
-// Log the exports to confirm they're working
-console.log('Controller exports check:', Object.keys(module.exports));

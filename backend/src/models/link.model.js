@@ -100,7 +100,7 @@ const createLink = async (originalUrl, options = {}) => {
  * @param {string} shortCode - Short code for the link
  * @returns {Object} The row entry for the link that corresponds to the provided short code
  */
-const getLinkObject = async (shortCode) => {
+const getLinkByShortCode = async (shortCode) => {
   try {
     const { data, error } = await supabase
       .from('links')
@@ -132,8 +132,8 @@ const getLinkObject = async (shortCode) => {
  */
 const incrementLinkVisitCount = async (shortCode) => {
   try {
-    const { data, error } = await supabase.rpc('increment_visit_link', {
-      p_short_code: shortCode, // Use the correct parameter name
+    const { data, error } = await supabase.rpc('increment_visit_count', {
+      p_short_code: shortCode, // Pass the parameter as an object with the correct key
     });
     if (error) {
       logger.error('Error incrementing visit count:', error);
@@ -245,37 +245,12 @@ const getAllLinksByUser = async (userId) => {
   }
 };
 
-/**
- * Get a specific link by ID
- * @param {string} id - Link ID
- * @returns {Object} The link object
- */
-const getLinkById = async (id) => {
-  try {
-    const { data, error } = await supabase
-      .from('links')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      logger.error('Error in getLinkById', error);
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    logger.error('Error in getLinkById model', error);
-    throw error;
-  }
-};
-
 module.exports = {
   createLink,
-  getLinkObject,
+  getLinkByShortCode,
+  updateOriginalLink,
   incrementLinkVisitCount,
   deleteLink,
   expireLink,
   getAllLinksByUser,
-  getLinkById,
 };

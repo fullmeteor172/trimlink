@@ -11,7 +11,6 @@ const morgan = require('morgan'); //TODO: HTTP Logging, making custom logger
 const config = require('./config/environment');
 const logger = require('./utils/logger');
 const routes = require('./routes/index');
-const rateLimiter = require('./middleware/rateLimiter.middleware');
 const { errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
@@ -28,17 +27,12 @@ app.use(
   })
 );
 
+//Parse json and URL-encoded bodies
 app.use(express.json());
-
-//Allows nested objects in form data
 app.use(express.urlencoded({ extended: true }));
 
 //Increases performance by reducing response size aka less bandwidth used
 app.use(compression());
-
-//Setting a global ratelimiter for all routes
-//TODO: Set rate-limiter only for specific routes
-app.use(rateLimiter);
 
 //Setting up request logging
 if (config.NODE_ENV != 'test') {
@@ -53,7 +47,13 @@ if (config.NODE_ENV != 'test') {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res
+    .status(200)
+    .json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: config.NODE_ENV,
+    });
 });
 
 //Registering all routes

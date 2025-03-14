@@ -6,51 +6,50 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/environment');
 const logger = require('../utils/logger');
-const { errorResponse } = require('../utils/responseHandler');
-//TODO: Adding in a response handler
-/**
- * Middleware to verify JWT
- * Sets req.user if token is valid, else sets it to null
- */
+const { ApiError } = require('./error.middleware');
 
+/**
+ * Exctracts and verifies the JWT associated with the request
+ * sets req.user if token is valid, otherwise sets req.user to null and moves on
+ */
 const verifyToken = (req, res, next) => {
   try {
-    //Getting the token from request header
     const authHeader = req.headers.authorization;
 
-    //TODO: More robust auth header validation
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
+    //Checking if token exists
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       req.user = null;
-      next();
+      return next();
     }
-    //Verify token, if this fails and error is thrown
+
+    //Extracting and verifying the token
+    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, config.SUPABASE_JWT_SECRET);
 
     req.user = {
       id: decoded.sub,
       email: decoded.email,
-      role: decoded.role,
+      role: decoded.role || 'authenticated',
     };
-    next();
+
+    //The token was verified, the req.user was updated, moving on to the next middleware
+    return next();
   } catch (error) {
-    logger.error(`Auth Error: ${error.message}`);
-    //Token is invalid but we continue as anonymous
+    logger.warn('Token verification failed for: ' + req.ip, error);
     req.user = null;
-    next();
+    return next();
   }
 };
 
 /**
  * Middleware to require authentication
- * Use after verifyToken middleware
+ * To be used after verifyToken
  */
 const requireAuth = (req, res, next) => {
   if (!req.user) {
-    return errorResponse(res, 401, 'Authentication required');
+    throw new ApiError(401, 'Authentication required');
   }
-  next();
+  return next();
 };
 
 module.exports = {

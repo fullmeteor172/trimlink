@@ -31,7 +31,6 @@ const consoleFormat = format.combine(
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: logFormat,
-  defaultMeta: { service: 'trimlink-api' },
   transports: [
     // Console transport for all environments
     new transports.Console({

@@ -10,6 +10,7 @@ const logger = require('./utils/logger');
 
 app.listen(config.PORT, () => {
   printConosoleWelcome(config);
+  logger.info('Server running on port' + config.PORT);
 });
 
 //Handle uncaught exceptions

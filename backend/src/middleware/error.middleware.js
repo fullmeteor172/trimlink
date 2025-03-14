@@ -47,7 +47,7 @@ const errorHandler = (err, req, res, next) => {
     success: false,
     message,
     //Stack trace only in develelopment environment
-    ...(config.NODE_ENV == 'devlopment' && { stack: err.stack }),
+    ...(config.NODE_ENV == 'development' && { stack: err.stack }),
   });
 };
 
