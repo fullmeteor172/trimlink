@@ -1,60 +1,30 @@
-# Node.js dependencies
-node_modules/
-npm-debug.log*
-yarn-error.log
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
-# Environment Variables (Keep secrets out of Git)
-.env
-.env.local
-.env.development.local
-.env.production.local
-.env.test.local
-
-# Build files & Vite caches
-dist/
-.vite/
-.cache/
-output/
-
-# OS / Editor-specific files
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.swp
-*.swo
-*.swn
-
-# Logs & Debug
-logs/
+# Logs
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-debug.log
+pnpm-debug.log*
+lerna-debug.log*
 
-# Jest / Testing
-jest/
-coverage/
-*.lcov
-.nyc_output/
+node_modules
+dist
+dist-ssr
+*.local
 
-# Tailwind JIT Cache
-.tailwind/
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Miscellaneous
-*.out
-*.pid
-*.seed
-.pnp
-.pnp.js
-*.tsbuildinfo
 
-# Linting
-.eslintcache
-
-# Public Uploads (If applicable)
-public/uploads/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+bun.lockb
